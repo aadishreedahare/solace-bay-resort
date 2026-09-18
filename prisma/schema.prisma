@@ -1,0 +1,382 @@
+// Solace Bay Resort & Spa — database schema
+// Run `npm run prisma:migrate` after setting DATABASE_URL to apply this.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  CUSTOMER
+  STAFF
+  ADMIN
+}
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  UNAVAILABLE
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum BookingSource {
+  WEBSITE
+  OFFLINE
+  PHONE
+  WALK_IN
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum PricingRuleType {
+  BASE
+  WEEKEND
+  SEASONAL
+  HOLIDAY
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  WHATSAPP
+}
+
+enum NotificationAudience {
+  CUSTOMER
+  ADMIN
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Identity
+// ─────────────────────────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  phone         String?
+  passwordHash  String
+  role          UserRole  @default(CUSTOMER)
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  bookings         Booking[]
+  reviews          Review[]
+  contactMessages  ContactMessage[]
+
+  @@index([role])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Hotel & content (admin-editable — see PolicySetting / HotelProfile)
+// ─────────────────────────────────────────────────────────────────────────
+
+model Hotel {
+  id               String   @id @default(cuid())
+  name             String
+  tagline          String
+  description      String   @db.Text
+  address          String
+  city             String
+  state            String
+  country          String
+  postalCode       String
+  phone            String
+  email            String
+  mapEmbedUrl      String?
+  checkInTime      String   // stored as "14:00" — display-formatted in the UI
+  checkOutTime     String
+  totalRooms       Int
+  facebookUrl      String?
+  instagramUrl     String?
+  twitterUrl       String?
+  cancellationHoursThreshold Int   @default(48)
+  cancellationFullRefundPct  Int   @default(100)
+  cancellationLateRefundPct  Int   @default(0)
+  taxPercent       Decimal  @default(12) @db.Decimal(5, 2)
+  updatedAt        DateTime @updatedAt
+
+  roomTypes   RoomType[]
+  amenities   Amenity[]
+  services    Service[]
+  offers      Coupon[]
+  gallery     GalleryImage[]
+  pricingRules PricingRule[]
+}
+
+model Amenity {
+  id       String  @id @default(cuid())
+  hotelId  String
+  hotel    Hotel   @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  name     String
+  icon     String  // lucide-react icon name, editable from admin
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+}
+
+model Service {
+  id           String   @id @default(cuid())
+  hotelId      String
+  hotel        Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  name         String
+  description  String   @db.Text
+  price        Decimal? @db.Decimal(10, 2) // null = "on request"
+  isAvailable  Boolean  @default(true)
+  order        Int      @default(0)
+  images       ServiceImage[]
+}
+
+model ServiceImage {
+  id        String  @id @default(cuid())
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  url       String
+  order     Int     @default(0)
+}
+
+model GalleryImage {
+  id       String  @id @default(cuid())
+  hotelId  String
+  hotel    Hotel   @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  url      String
+  category String  // Exterior | Lobby | Rooms | Restaurant | Pool | Events | Other
+  caption  String?
+  order    Int     @default(0)
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Rooms
+// ─────────────────────────────────────────────────────────────────────────
+
+model RoomType {
+  id            String   @id @default(cuid())
+  hotelId       String
+  hotel         Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  slug          String   @unique
+  name          String   // Deluxe Room, Premium Room, Executive Room, Suite, Family Room ...
+  description   String   @db.Text
+  bedType       String
+  sizeSqft      Int
+  maxGuests     Int
+  basePrice     Decimal  @db.Decimal(10, 2)
+  totalRooms    Int      // total inventory of this type — availability is computed, not stored
+  amenities     String[] // simple tag list (room-level amenities like AC, minibar, sea view)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  images        RoomImage[]
+  rooms         Room[]
+  bookings      Booking[]
+  pricingRules  PricingRule[]
+  reviews       Review[]
+
+  @@index([hotelId])
+}
+
+model RoomImage {
+  id         String   @id @default(cuid())
+  roomTypeId String
+  roomType   RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  url        String
+  order      Int      @default(0)
+}
+
+// Individual physical rooms — lets admin block ONE unit for maintenance
+// without affecting the whole room type's inventory count.
+model Room {
+  id         String     @id @default(cuid())
+  roomTypeId String
+  roomType   RoomType   @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  roomNumber String     // e.g. "101"
+  floor      String?
+  status     RoomStatus @default(AVAILABLE)
+  notes      String?
+
+  @@unique([roomTypeId, roomNumber])
+}
+
+model PricingRule {
+  id         String          @id @default(cuid())
+  hotelId    String
+  hotel      Hotel           @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  roomTypeId String?
+  roomType   RoomType?       @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  type       PricingRuleType
+  startDate  DateTime?       // null for BASE / WEEKEND (always active)
+  endDate    DateTime?
+  priceOverride Decimal?     @db.Decimal(10, 2) // absolute nightly price
+  priceDeltaPct Decimal?     @db.Decimal(5, 2)  // OR a % adjustment over base
+  isActive   Boolean         @default(true)
+
+  @@index([roomTypeId, startDate, endDate])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Bookings
+// ─────────────────────────────────────────────────────────────────────────
+
+model Booking {
+  id              String        @id @default(cuid())
+  bookingCode     String        @unique // e.g. HTL-2026-000123
+  userId          String?
+  user            User?         @relation(fields: [userId], references: [id])
+  roomTypeId      String
+  roomType        RoomType      @relation(fields: [roomTypeId], references: [id])
+
+  checkIn         DateTime
+  checkOut        DateTime
+  roomsBooked     Int
+  guestsCount     Int
+
+  guestName       String
+  guestEmail      String
+  guestPhone      String
+  specialRequests String?       @db.Text
+
+  basePrice       Decimal       @db.Decimal(10, 2) // per-night rate used
+  nights          Int
+  subtotal        Decimal       @db.Decimal(10, 2) // basePrice * nights * roomsBooked
+  taxAmount       Decimal       @db.Decimal(10, 2)
+  discountAmount  Decimal       @default(0) @db.Decimal(10, 2)
+  totalAmount     Decimal       @db.Decimal(10, 2)
+
+  couponId        String?
+  coupon          Coupon?       @relation(fields: [couponId], references: [id])
+
+  status          BookingStatus @default(PENDING)
+  source          BookingSource @default(WEBSITE)
+
+  cancelledAt     DateTime?
+  cancellationReason String?
+  refundAmount    Decimal?      @db.Decimal(10, 2)
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  guests          BookingGuest[]
+  payment         Payment?
+  notifications   Notification[]
+  review          Review?
+
+  // Overlap-prevention relies on querying by roomTypeId + date range inside
+  // a transaction (see src/server/services/availability.service.ts) rather
+  // than a DB constraint, since "N rooms of a type" isn't expressible as a
+  // simple unique/exclusion constraint without a per-physical-room model.
+  @@index([roomTypeId, checkIn, checkOut, status])
+  @@index([status])
+}
+
+model BookingGuest {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  fullName  String
+  age       Int?
+  idType    String? // Aadhaar, Passport, Driving Licence ...
+  idNumber  String?
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  bookingId         String        @unique
+  booking           Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  provider          String        @default("razorpay")
+  providerOrderId   String?
+  providerPaymentId String?
+  providerSignature String?
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("INR")
+  status            PaymentStatus @default(PENDING)
+  paidAt            DateTime?
+  createdAt         DateTime      @default(now())
+}
+
+model Coupon {
+  id                 String       @id @default(cuid())
+  hotelId            String
+  hotel              Hotel        @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  code               String       @unique
+  discountType       DiscountType
+  discountValue      Decimal      @db.Decimal(10, 2)
+  minBookingAmount   Decimal?     @db.Decimal(10, 2)
+  startDate          DateTime
+  expiryDate         DateTime
+  usageLimit         Int?
+  usageCount         Int          @default(0)
+  isActive           Boolean      @default(true)
+
+  bookings           Booking[]
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Reviews, contact, notifications
+// ─────────────────────────────────────────────────────────────────────────
+
+model Review {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  bookingId   String    @unique
+  booking     Booking   @relation(fields: [bookingId], references: [id])
+  roomTypeId  String
+  roomType    RoomType  @relation(fields: [roomTypeId], references: [id])
+  rating      Int       // 1-5
+  text        String    @db.Text
+  isApproved  Boolean   @default(false)
+  isHidden    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String               @id @default(cuid())
+  bookingId String?
+  booking   Booking?             @relation(fields: [bookingId], references: [id])
+  audience  NotificationAudience
+  channel   NotificationChannel  @default(EMAIL)
+  type      String               // "booking_confirmed" | "booking_cancelled" | "check_in_reminder" | ...
+  payload   Json?
+  sentAt    DateTime?
+  createdAt DateTime             @default(now())
+}
