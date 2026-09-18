@@ -1,4 +1,4 @@
-import type { NextAuthOptions } from 'next-auth';
+﻿import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { db } from '@/server/db';
@@ -41,7 +41,6 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        // @ts-expect-error - role is added to the User shape via next-auth.d.ts
         token.role = user.role;
       }
       return token;
@@ -49,7 +48,6 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        // @ts-expect-error - role is added to the Session shape via next-auth.d.ts
         session.user.role = token.role;
       }
       return session;
