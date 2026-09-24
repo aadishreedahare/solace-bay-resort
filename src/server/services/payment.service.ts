@@ -12,8 +12,7 @@ function getClient() {
 export async function createPaymentOrder(bookingId: string) {
   const booking = await db.booking.findUniqueOrThrow({ where: { id: bookingId } });
 
-  const razorpay = getClient();
-  const order = await razorpay.orders.create({
+  const order = await getClient().orders.create({
     amount: Math.round(Number(booking.totalAmount) * 100), // paise
     currency: 'INR',
     receipt: booking.bookingCode,
@@ -35,13 +34,12 @@ export async function createPaymentOrder(bookingId: string) {
   return order;
 }
 
-/** Verifies the HMAC signature Razorpay returns after checkout — never trust the client-reported status alone. */
+// Razorpay signs order_id|payment_id with our secret; a matching signature proves the payment is real.
 export function verifyPaymentSignature(orderId: string, paymentId: string, signature: string) {
   const expected = crypto
     .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
     .update(`${orderId}|${paymentId}`)
     .digest('hex');
-
   return expected === signature;
 }
 

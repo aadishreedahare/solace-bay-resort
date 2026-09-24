@@ -1,7 +1,6 @@
 import { db } from '@/server/db';
 import { updateHotelSettings } from './actions';
 
-const inputClass = 'rounded-md border border-ink-900/15 px-3 py-2.5 text-sm';
 const labelClass = 'flex flex-col gap-1 text-xs font-medium text-ink-900/50';
 
 export default async function AdminSettingsPage() {
@@ -21,15 +20,15 @@ export default async function AdminSettingsPage() {
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label className={labelClass}>
               Hotel Name
-              <input name="name" required defaultValue={hotel.name} className={inputClass} />
+              <input name="name" required defaultValue={hotel.name} className="input" />
             </label>
             <label className={labelClass}>
               Tagline
-              <input name="tagline" required defaultValue={hotel.tagline} className={inputClass} />
+              <input name="tagline" required defaultValue={hotel.tagline} className="input" />
             </label>
             <label className={`sm:col-span-2 ${labelClass}`}>
               Description
-              <textarea name="description" required rows={4} defaultValue={hotel.description} className={inputClass} />
+              <textarea name="description" required rows={4} defaultValue={hotel.description} className="input" />
             </label>
           </div>
         </section>
@@ -39,35 +38,35 @@ export default async function AdminSettingsPage() {
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label className={`sm:col-span-2 ${labelClass}`}>
               Address
-              <input name="address" required defaultValue={hotel.address} className={inputClass} />
+              <input name="address" required defaultValue={hotel.address} className="input" />
             </label>
             <label className={labelClass}>
               City
-              <input name="city" required defaultValue={hotel.city} className={inputClass} />
+              <input name="city" required defaultValue={hotel.city} className="input" />
             </label>
             <label className={labelClass}>
               State
-              <input name="state" required defaultValue={hotel.state} className={inputClass} />
+              <input name="state" required defaultValue={hotel.state} className="input" />
             </label>
             <label className={labelClass}>
               Country
-              <input name="country" required defaultValue={hotel.country} className={inputClass} />
+              <input name="country" required defaultValue={hotel.country} className="input" />
             </label>
             <label className={labelClass}>
               Postal Code
-              <input name="postalCode" required defaultValue={hotel.postalCode} className={inputClass} />
+              <input name="postalCode" required defaultValue={hotel.postalCode} className="input" />
             </label>
             <label className={labelClass}>
               Phone
-              <input name="phone" required defaultValue={hotel.phone} className={inputClass} />
+              <input name="phone" required defaultValue={hotel.phone} className="input" />
             </label>
             <label className={labelClass}>
               Email
-              <input name="email" type="email" required defaultValue={hotel.email} className={inputClass} />
+              <input name="email" type="email" required defaultValue={hotel.email} className="input" />
             </label>
             <label className={`sm:col-span-2 ${labelClass}`}>
               Google Maps Embed URL (optional)
-              <input name="mapEmbedUrl" defaultValue={hotel.mapEmbedUrl ?? ''} className={inputClass} />
+              <input name="mapEmbedUrl" defaultValue={hotel.mapEmbedUrl ?? ''} className="input" />
             </label>
           </div>
         </section>
@@ -77,27 +76,27 @@ export default async function AdminSettingsPage() {
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <label className={labelClass}>
               Check-in Time
-              <input name="checkInTime" required defaultValue={hotel.checkInTime} placeholder="14:00" className={inputClass} />
+              <input name="checkInTime" required defaultValue={hotel.checkInTime} placeholder="14:00" className="input" />
             </label>
             <label className={labelClass}>
               Check-out Time
-              <input name="checkOutTime" required defaultValue={hotel.checkOutTime} placeholder="11:00" className={inputClass} />
+              <input name="checkOutTime" required defaultValue={hotel.checkOutTime} placeholder="11:00" className="input" />
             </label>
             <label className={labelClass}>
               Tax (%)
-              <input name="taxPercent" type="number" step="0.01" required defaultValue={Number(hotel.taxPercent)} className={inputClass} />
+              <input name="taxPercent" type="number" step="0.01" required defaultValue={Number(hotel.taxPercent)} className="input" />
             </label>
             <label className={labelClass}>
               Free cancellation window (hours before check-in)
-              <input name="cancellationHoursThreshold" type="number" required defaultValue={hotel.cancellationHoursThreshold} className={inputClass} />
+              <input name="cancellationHoursThreshold" type="number" required defaultValue={hotel.cancellationHoursThreshold} className="input" />
             </label>
             <label className={labelClass}>
               Refund % if cancelled before window
-              <input name="cancellationFullRefundPct" type="number" required defaultValue={hotel.cancellationFullRefundPct} className={inputClass} />
+              <input name="cancellationFullRefundPct" type="number" required defaultValue={hotel.cancellationFullRefundPct} className="input" />
             </label>
             <label className={labelClass}>
               Refund % if cancelled after window
-              <input name="cancellationLateRefundPct" type="number" required defaultValue={hotel.cancellationLateRefundPct} className={inputClass} />
+              <input name="cancellationLateRefundPct" type="number" required defaultValue={hotel.cancellationLateRefundPct} className="input" />
             </label>
           </div>
         </section>
@@ -107,15 +106,15 @@ export default async function AdminSettingsPage() {
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <label className={labelClass}>
               Facebook
-              <input name="facebookUrl" defaultValue={hotel.facebookUrl ?? ''} className={inputClass} />
+              <input name="facebookUrl" defaultValue={hotel.facebookUrl ?? ''} className="input" />
             </label>
             <label className={labelClass}>
               Instagram
-              <input name="instagramUrl" defaultValue={hotel.instagramUrl ?? ''} className={inputClass} />
+              <input name="instagramUrl" defaultValue={hotel.instagramUrl ?? ''} className="input" />
             </label>
             <label className={labelClass}>
               Twitter / X
-              <input name="twitterUrl" defaultValue={hotel.twitterUrl ?? ''} className={inputClass} />
+              <input name="twitterUrl" defaultValue={hotel.twitterUrl ?? ''} className="input" />
             </label>
           </div>
         </section>

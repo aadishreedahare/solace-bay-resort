@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { db } from '@/server/db';
-import { getAvailableRoomCount, getBlockedPhysicalRooms } from '@/server/services/availability.service';
 
 const DAYS_SHOWN = 21;
 
@@ -26,29 +25,38 @@ export default async function AdminCalendarPage({
   const start = searchParams.start ? new Date(searchParams.start) : new Date();
   start.setHours(0, 0, 0, 0);
 
+  const end = addDays(start, DAYS_SHOWN);
   const days = Array.from({ length: DAYS_SHOWN }, (_, i) => addDays(start, i));
 
-  const roomTypes = await db.roomType.findMany({
-    where: { isActive: true },
-    orderBy: { name: 'asc' },
+  // Three queries for the whole grid instead of one set per room type per day.
+  const [roomTypes, bookings, blockedRooms] = await Promise.all([
+    db.roomType.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } }),
+    db.booking.findMany({
+      where: { status: { in: ['PENDING', 'CONFIRMED'] }, checkIn: { lt: end }, checkOut: { gt: start } },
+      select: { roomTypeId: true, checkIn: true, checkOut: true, roomsBooked: true },
+    }),
+    db.room.groupBy({
+      by: ['roomTypeId'],
+      where: { status: { in: ['MAINTENANCE', 'UNAVAILABLE'] } },
+      _count: true,
+    }),
+  ]);
+
+  const grid = roomTypes.map((rt) => {
+    const blocked = blockedRooms.find((b) => b.roomTypeId === rt.id)?._count ?? 0;
+    const ownBookings = bookings.filter((b) => b.roomTypeId === rt.id);
+    const cells = days.map((day) => {
+      const nextDay = addDays(day, 1);
+      const booked = ownBookings
+        .filter((b) => b.checkIn < nextDay && b.checkOut > day)
+        .reduce((sum, b) => sum + b.roomsBooked, 0);
+      return { date: day, available: Math.max(0, rt.totalRooms - booked - blocked) };
+    });
+    return { roomType: rt, blocked, cells };
   });
 
-  const grid = await Promise.all(
-    roomTypes.map(async (rt) => {
-      const blocked = await getBlockedPhysicalRooms(rt.id);
-      const cells = await Promise.all(
-        days.map(async (day) => {
-          const nextDay = addDays(day, 1);
-          const available = await getAvailableRoomCount(rt.id, day, nextDay);
-          return { date: day, available };
-        }),
-      );
-      return { roomType: rt, blocked, cells };
-    }),
-  );
-
   const prevStart = addDays(start, -DAYS_SHOWN).toISOString().split('T')[0];
-  const nextStart = addDays(start, DAYS_SHOWN).toISOString().split('T')[0];
+  const nextStart = end.toISOString().split('T')[0];
 
   return (
     <div>

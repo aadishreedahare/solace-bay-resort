@@ -3,25 +3,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Users, Search } from 'lucide-react';
-
-function todayISO() {
-  return new Date().toISOString().split('T')[0];
-}
-function tomorrowISO() {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  return d.toISOString().split('T')[0];
-}
+import { isoDate } from '@/lib/utils';
 
 export function BookingWidget({ variant = 'hero' }: { variant?: 'hero' | 'inline' }) {
   const router = useRouter();
-  const [checkIn, setCheckIn] = useState(todayISO());
-  const [checkOut, setCheckOut] = useState(tomorrowISO());
+  const [checkIn, setCheckIn] = useState(isoDate());
+  const [checkOut, setCheckOut] = useState(isoDate(1));
   const [guests, setGuests] = useState(2);
 
   function handleSearch() {
-    const params = new URLSearchParams({ checkIn, checkOut, guests: String(guests) });
-    router.push(`/rooms?${params.toString()}`);
+    router.push(`/rooms?${new URLSearchParams({ checkIn, checkOut, guests: String(guests) })}`);
   }
 
   return (
@@ -40,9 +31,9 @@ export function BookingWidget({ variant = 'hero' }: { variant?: 'hero' | 'inline
           <input
             type="date"
             value={checkIn}
-            min={todayISO()}
+            min={isoDate()}
             onChange={(e) => setCheckIn(e.target.value)}
-            className="w-full rounded-md border border-ink-900/15 px-3 py-2.5 text-sm text-ink-900 outline-none focus:border-gold-500"
+            className="input"
           />
         </label>
 
@@ -55,7 +46,7 @@ export function BookingWidget({ variant = 'hero' }: { variant?: 'hero' | 'inline
             value={checkOut}
             min={checkIn}
             onChange={(e) => setCheckOut(e.target.value)}
-            className="w-full rounded-md border border-ink-900/15 px-3 py-2.5 text-sm text-ink-900 outline-none focus:border-gold-500"
+            className="input"
           />
         </label>
 
@@ -66,7 +57,7 @@ export function BookingWidget({ variant = 'hero' }: { variant?: 'hero' | 'inline
           <select
             value={guests}
             onChange={(e) => setGuests(Number(e.target.value))}
-            className="w-full rounded-md border border-ink-900/15 px-3 py-2.5 text-sm text-ink-900 outline-none focus:border-gold-500"
+            className="input"
           >
             {Array.from({ length: 8 }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>

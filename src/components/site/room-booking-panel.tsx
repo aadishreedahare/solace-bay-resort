@@ -2,27 +2,12 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { formatCurrency } from '@/lib/utils';
-
-function todayISO() {
-  return new Date().toISOString().split('T')[0];
-}
-function plusDaysISO(days: number) {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return d.toISOString().split('T')[0];
-}
+import { formatCurrency, isoDate } from '@/lib/utils';
+import type { PriceBreakdown } from '@/server/services/pricing.service';
 
 interface PriceResponse {
   availableRooms: number;
-  price: {
-    nights: number;
-    averageNightlyRate: number;
-    subtotal: number;
-    taxAmount: number;
-    discountAmount: number;
-    totalAmount: number;
-  };
+  price: PriceBreakdown;
 }
 
 export function RoomBookingPanel({
@@ -35,8 +20,8 @@ export function RoomBookingPanel({
   basePrice: number;
 }) {
   const router = useRouter();
-  const [checkIn, setCheckIn] = useState(todayISO());
-  const [checkOut, setCheckOut] = useState(plusDaysISO(1));
+  const [checkIn, setCheckIn] = useState(isoDate());
+  const [checkOut, setCheckOut] = useState(isoDate(1));
   const [rooms, setRooms] = useState(1);
   const [guests, setGuests] = useState(2);
   const [data, setData] = useState<PriceResponse | null>(null);
@@ -47,8 +32,7 @@ export function RoomBookingPanel({
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ checkIn, checkOut, roomTypeId });
-      const res = await fetch(`/api/availability?${params.toString()}`);
+      const res = await fetch(`/api/availability?${new URLSearchParams({ checkIn, checkOut, roomTypeId })}`);
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'Could not check availability');
       setData(json);
@@ -68,14 +52,8 @@ export function RoomBookingPanel({
   const canBook = !!data && data.availableRooms >= rooms && rooms >= 1;
 
   function handleBookNow() {
-    const params = new URLSearchParams({
-      roomTypeId,
-      checkIn,
-      checkOut,
-      rooms: String(rooms),
-      guests: String(guests),
-    });
-    router.push(`/booking/review?${params.toString()}`);
+    const params = new URLSearchParams({ roomTypeId, checkIn, checkOut, rooms: String(rooms), guests: String(guests) });
+    router.push(`/booking/review?${params}`);
   }
 
   return (
@@ -91,7 +69,7 @@ export function RoomBookingPanel({
           <input
             type="date"
             value={checkIn}
-            min={todayISO()}
+            min={isoDate()}
             onChange={(e) => setCheckIn(e.target.value)}
             className="w-full rounded-md border border-ink-900/15 px-2.5 py-2 text-sm outline-none focus:border-gold-500"
           />

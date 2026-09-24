@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-// Standard Next.js dev-mode singleton so hot-reload doesn't exhaust
-// PostgreSQL connections by creating a new PrismaClient on every reload.
+// Reuse one client across hot reloads in dev so we don't run out of DB connections.
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 export const db =
@@ -10,6 +9,4 @@ export const db =
     log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
   });
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = db;
-}
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;

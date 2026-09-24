@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Users, BedDouble, Maximize, Check } from 'lucide-react';
 import { db } from '@/server/db';

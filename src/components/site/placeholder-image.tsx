@@ -3,13 +3,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
-/**
- * Renders a real photo from /public/images when `src` is given AND that
- * file actually exists; otherwise (or if the file 404s) falls back to an
- * elegant gradient placeholder so the site never shows a broken-image icon.
- * This means dropping a correctly-named file into /public/images is the
- * entire "add real photos" workflow — no code change needed.
- */
+// Shows the photo at `src`; if it's missing or fails to load, shows a gradient instead.
 const GRADIENTS = [
   'from-[#c9a96b] via-[#8f6a3f] to-[#4a3a24]',
   'from-[#6f8a86] via-[#3f5754] to-[#1f2e2c]',

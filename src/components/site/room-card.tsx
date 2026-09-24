@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { RoomType } from '@prisma/client';
 import { Users, BedDouble, Maximize } from 'lucide-react';
 import { PlaceholderImage } from './placeholder-image';
 import { formatCurrency } from '@/lib/utils';
@@ -12,6 +13,11 @@ export interface RoomCardData {
   bedType: string;
   sizeSqft: number;
   imageSeed: number;
+}
+
+export function toRoomCard(rt: RoomType, imageSeed: number): RoomCardData {
+  const { slug, name, description, maxGuests, bedType, sizeSqft } = rt;
+  return { slug, name, description, maxGuests, bedType, sizeSqft, basePrice: Number(rt.basePrice), imageSeed };
 }
 
 export function RoomCard({ room }: { room: RoomCardData }) {

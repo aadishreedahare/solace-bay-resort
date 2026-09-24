@@ -24,7 +24,7 @@ export async function GET(req: Request) {
   return NextResponse.json({ reviews });
 }
 
-// Only a verified customer whose booking has actually completed may review.
+// Only the guest who made the booking can review it, and only after the stay is completed.
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
       roomTypeId: booking.roomTypeId,
       rating: parsed.data.rating,
       text: parsed.data.text,
-      isApproved: false, // admin must approve before it appears publicly
+      isApproved: false,
     },
   });
 

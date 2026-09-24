@@ -37,13 +37,13 @@ export function OfflineBookingForm({ roomTypes }: { roomTypes: RoomTypeOption[] 
       </p>
 
       <form ref={formRef} onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <select name="source" required defaultValue="WALK_IN" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm">
+        <select name="source" required defaultValue="WALK_IN" className="input">
           <option value="WALK_IN">Walk-in</option>
           <option value="PHONE">Phone</option>
           <option value="OFFLINE">Offline / Travel Agent</option>
         </select>
 
-        <select name="roomTypeId" required defaultValue="" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm">
+        <select name="roomTypeId" required defaultValue="" className="input">
           <option value="" disabled>Select room type…</option>
           {roomTypes.map((rt) => (
             <option key={rt.id} value={rt.id}>
@@ -54,20 +54,20 @@ export function OfflineBookingForm({ roomTypes }: { roomTypes: RoomTypeOption[] 
 
         <label className="flex flex-col gap-1 text-xs text-ink-900/50">
           Check-in
-          <input name="checkIn" type="date" required className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm text-ink-900" />
+          <input name="checkIn" type="date" required className="input" />
         </label>
         <label className="flex flex-col gap-1 text-xs text-ink-900/50">
           Check-out
-          <input name="checkOut" type="date" required className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm text-ink-900" />
+          <input name="checkOut" type="date" required className="input" />
         </label>
 
-        <input name="roomsBooked" type="number" min={1} defaultValue={1} required placeholder="Rooms" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-        <input name="guestsCount" type="number" min={1} defaultValue={2} required placeholder="Total Guests" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
+        <input name="roomsBooked" type="number" min={1} defaultValue={1} required placeholder="Rooms" className="input" />
+        <input name="guestsCount" type="number" min={1} defaultValue={2} required placeholder="Total Guests" className="input" />
 
-        <input name="guestName" required placeholder="Guest Full Name" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-        <input name="guestPhone" required placeholder="Guest Phone" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-        <input name="guestEmail" type="email" placeholder="Guest Email (optional)" className="sm:col-span-2 rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-        <textarea name="specialRequests" placeholder="Notes / special requests (optional)" rows={2} className="sm:col-span-2 rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
+        <input name="guestName" required placeholder="Guest Full Name" className="input" />
+        <input name="guestPhone" required placeholder="Guest Phone" className="input" />
+        <input name="guestEmail" type="email" placeholder="Guest Email (optional)" className="sm:col-span-2 input" />
+        <textarea name="specialRequests" placeholder="Notes / special requests (optional)" rows={2} className="sm:col-span-2 input" />
 
         <label className="sm:col-span-2 flex items-center gap-2 text-sm text-ink-900/70">
           <input type="checkbox" name="markPaid" className="h-4 w-4 rounded border-ink-900/25" />

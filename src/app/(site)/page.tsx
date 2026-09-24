@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Wifi, Waves, UtensilsCrossed, ParkingCircle, Dumbbell, Sparkles, MapPin } from 'lucide-react';
 import { BookingWidget } from '@/components/site/booking-widget';
 import { SectionHeading } from '@/components/site/section-heading';
-import { RoomCard, type RoomCardData } from '@/components/site/room-card';
+import { RoomCard, toRoomCard, type RoomCardData } from '@/components/site/room-card';
 import { PlaceholderImage } from '@/components/site/placeholder-image';
 import { StarRating } from '@/components/site/star-rating';
 import { db } from '@/server/db';
@@ -43,16 +43,7 @@ async function getFeaturedRooms(): Promise<RoomCardData[]> {
     take: 3,
   });
 
-  return roomTypes.map((rt, i) => ({
-    slug: rt.slug,
-    name: rt.name,
-    description: rt.description,
-    basePrice: Number(rt.basePrice),
-    maxGuests: rt.maxGuests,
-    bedType: rt.bedType,
-    sizeSqft: rt.sizeSqft,
-    imageSeed: i,
-  }));
+  return roomTypes.map(toRoomCard);
 }
 
 export default async function HomePage() {
@@ -60,7 +51,6 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* HERO */}
       <section className="relative flex min-h-[88vh] items-center justify-center overflow-hidden">
         <PlaceholderImage seed={4} src="/images/hero.jpg" className="absolute inset-0 h-full w-full" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950/80 via-ink-950/35 to-ink-950/55" />
@@ -83,7 +73,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* INTRO */}
       <section className="py-24">
         <div className="container-site grid grid-cols-1 items-center gap-14 lg:grid-cols-2">
           <div className="grid grid-cols-2 gap-4">
@@ -109,7 +98,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* FEATURED ROOMS */}
       {featuredRooms.length > 0 && (
         <section className="bg-sand-100/60 py-24">
           <div className="container-site">
@@ -132,7 +120,6 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* AMENITIES */}
       <section className="py-24">
         <div className="container-site">
           <SectionHeading
@@ -153,7 +140,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* GALLERY PREVIEW */}
       <section className="bg-ink-950 py-24">
         <div className="container-site">
           <SectionHeading
@@ -179,7 +165,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* OFFERS STRIP */}
       <section className="py-20">
         <div className="container-site rounded-2xl bg-gold-500 px-8 py-14 text-center sm:px-16">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-white/80">Limited-Time Offer</p>
@@ -195,7 +180,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
       <section className="bg-sand-100/60 py-24">
         <div className="container-site">
           <SectionHeading eyebrow="Guest Stories" title="What Our Guests Say" />
@@ -213,7 +197,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* LOCATION */}
       <section className="py-24">
         <div className="container-site grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center">
           <div>

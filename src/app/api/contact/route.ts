@@ -16,11 +16,7 @@ export async function POST(req: Request) {
   });
 
   await db.notification.create({
-    data: {
-      audience: 'ADMIN',
-      type: 'new_enquiry',
-      payload: { contactMessageId: message.id },
-    },
+    data: { audience: 'ADMIN', type: 'new_enquiry', payload: { contactMessageId: message.id } },
   });
 
   return NextResponse.json({ success: true }, { status: 201 });

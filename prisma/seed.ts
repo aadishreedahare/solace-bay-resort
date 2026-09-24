@@ -1,12 +1,4 @@
-/**
- * Seeds a fully working Solace Bay Resort & Spa dataset: the hotel profile,
- * an admin + staff login, five room types with physical room inventory,
- * pricing rules, a coupon, dining/spa services, a few completed bookings
- * with approved reviews, and sample contact messages — so every admin page
- * and every public page has real data to render on first run.
- *
- * Run with: npm run prisma:seed  (after `npm run prisma:migrate`)
- */
+// Sample data so every page has something to show. Run: npm run prisma:seed (after prisma:migrate).
 import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
@@ -27,7 +19,7 @@ function daysFromNow(days: number) {
 async function main() {
   console.log('Seeding Solace Bay Resort & Spa…');
 
-  // ── Hotel profile ─────────────────────────────────────────────────────
+  // Hotel profile
   const existingHotel = await db.hotel.findFirst();
   const hotel =
     existingHotel ??
@@ -61,7 +53,7 @@ async function main() {
       },
     }));
 
-  // ── Admin & staff logins ──────────────────────────────────────────────
+  // Admin & staff logins
   const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@solacebayresort.com';
   const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'ChangeMe123!';
 
@@ -90,7 +82,7 @@ async function main() {
   console.log(`  Admin login: ${adminEmail} / ${adminPassword}`);
   console.log('  Staff login: frontdesk@solacebayresort.com / FrontDesk123!');
 
-  // ── Room types (42 rooms total, matching the hotel profile) ──────────
+  // Room types (42 rooms total, matching the hotel profile)
   const roomTypeDefs = [
     {
       name: 'Deluxe Room',
@@ -159,8 +151,7 @@ async function main() {
     });
     roomTypes.push(rt);
 
-    // Physical room units — lets admin block a single unit for maintenance
-    // without touching the room type's total inventory count.
+    // Individual room units, so one unit can be blocked for maintenance
     const existingUnits = await db.room.count({ where: { roomTypeId: rt.id } });
     if (existingUnits === 0) {
       const floorBase = 100 * (roomTypes.length);
@@ -182,7 +173,7 @@ async function main() {
   const suite = roomTypes.find((r) => r.name === 'Suite')!;
   const family = roomTypes.find((r) => r.name === 'Family Room')!;
 
-  // ── Pricing rules ──────────────────────────────────────────────────────
+  // Pricing rules
   const existingRules = await db.pricingRule.count();
   if (existingRules === 0) {
     await db.pricingRule.create({
@@ -204,7 +195,7 @@ async function main() {
     });
   }
 
-  // ── Coupon ───────────────────────────────────────────────────────────
+  // Coupon
   await db.coupon.upsert({
     where: { code: 'COASTAL15' },
     update: {},
@@ -220,8 +211,7 @@ async function main() {
     },
   });
 
-  // ── Amenities (property-level, shown from admin; homepage currently
-  // renders a curated static set, but these back the Amenities admin page) ──
+  // Amenities
   const amenityDefs = [
     { name: 'Infinity Pool', icon: 'Waves' },
     { name: 'Multi-Cuisine Restaurant', icon: 'UtensilsCrossed' },
@@ -238,7 +228,7 @@ async function main() {
     }
   }
 
-  // ── Services (restaurant, spa, experiences) ───────────────────────────
+  // Services (restaurant, spa, experiences)
   const serviceDefs = [
     {
       name: 'Seaside Restaurant',
@@ -271,7 +261,7 @@ async function main() {
     }
   }
 
-  // ── Sample guests, completed bookings, and approved reviews ──────────
+  // Sample guests, completed bookings, and approved reviews
   const guestDefs = [
     {
       name: 'Priya Mehta',
@@ -370,7 +360,7 @@ async function main() {
     });
   }
 
-  // ── Sample contact messages ───────────────────────────────────────────
+  // Sample contact messages
   if ((await db.contactMessage.count()) === 0) {
     await db.contactMessage.create({
       data: {

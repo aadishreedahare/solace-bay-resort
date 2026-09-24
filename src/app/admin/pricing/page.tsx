@@ -61,21 +61,21 @@ export default async function AdminPricingPage() {
       <div className="mt-10 rounded-xl border border-ink-900/8 bg-white p-6 shadow-card">
         <h2 className="font-serif text-lg text-ink-900">Add Pricing Rule</h2>
         <form action={createPricingRule} className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <select name="roomTypeId" defaultValue="" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm">
+          <select name="roomTypeId" defaultValue="" className="input">
             <option value="">All room types</option>
             {roomTypes.map((rt) => (
               <option key={rt.id} value={rt.id}>{rt.name}</option>
             ))}
           </select>
-          <select name="type" required defaultValue="SEASONAL" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm">
+          <select name="type" required defaultValue="SEASONAL" className="input">
             <option value="WEEKEND">Weekend (Fri/Sat/Sun)</option>
             <option value="SEASONAL">Seasonal</option>
             <option value="HOLIDAY">Holiday</option>
           </select>
-          <input name="startDate" type="date" placeholder="Start date (seasonal/holiday only)" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-          <input name="endDate" type="date" placeholder="End date (seasonal/holiday only)" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-          <input name="priceOverride" type="number" placeholder="Fixed price / night (₹) — optional" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-          <input name="priceDeltaPct" type="number" placeholder="OR % adjustment, e.g. 20 or -10" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
+          <input name="startDate" type="date" placeholder="Start date (seasonal/holiday only)" className="input" />
+          <input name="endDate" type="date" placeholder="End date (seasonal/holiday only)" className="input" />
+          <input name="priceOverride" type="number" placeholder="Fixed price / night (₹) — optional" className="input" />
+          <input name="priceDeltaPct" type="number" placeholder="OR % adjustment, e.g. 20 or -10" className="input" />
           <button type="submit" className="btn-gold sm:col-span-2">Add Rule</button>
         </form>
       </div>

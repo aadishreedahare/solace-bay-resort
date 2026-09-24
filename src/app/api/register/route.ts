@@ -8,10 +8,7 @@ export async function POST(req: Request) {
   const parsed = registerSchema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'Invalid input', issues: parsed.error.flatten() },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: 'Invalid input', issues: parsed.error.flatten() }, { status: 400 });
   }
 
   const { name, email, phone, password } = parsed.data;
@@ -25,13 +22,7 @@ export async function POST(req: Request) {
   const passwordHash = await bcrypt.hash(password, 12);
 
   const user = await db.user.create({
-    data: {
-      name,
-      email: normalizedEmail,
-      phone,
-      passwordHash,
-      role: 'CUSTOMER',
-    },
+    data: { name, email: normalizedEmail, phone, passwordHash, role: 'CUSTOMER' },
     select: { id: true, name: true, email: true },
   });
 

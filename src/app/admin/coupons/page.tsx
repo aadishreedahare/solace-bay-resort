@@ -55,22 +55,22 @@ export default async function AdminCouponsPage() {
       <div className="mt-10 rounded-xl border border-ink-900/8 bg-white p-6 shadow-card">
         <h2 className="font-serif text-lg text-ink-900">Add Coupon</h2>
         <form action={createCoupon} className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <input name="code" required placeholder="Code, e.g. COASTAL20" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm uppercase" />
-          <select name="discountType" required defaultValue="PERCENTAGE" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm">
+          <input name="code" required placeholder="Code, e.g. COASTAL20" className="input uppercase" />
+          <select name="discountType" required defaultValue="PERCENTAGE" className="input">
             <option value="PERCENTAGE">Percentage off</option>
             <option value="FIXED">Fixed amount off (₹)</option>
           </select>
-          <input name="discountValue" required type="number" placeholder="Discount value" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-          <input name="minBookingAmount" type="number" placeholder="Min. booking amount (optional)" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
+          <input name="discountValue" required type="number" placeholder="Discount value" className="input" />
+          <input name="minBookingAmount" type="number" placeholder="Min. booking amount (optional)" className="input" />
           <label className="flex flex-col gap-1 text-xs text-ink-900/50">
             Start date
-            <input name="startDate" type="date" required className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm text-ink-900" />
+            <input name="startDate" type="date" required className="input" />
           </label>
           <label className="flex flex-col gap-1 text-xs text-ink-900/50">
             Expiry date
-            <input name="expiryDate" type="date" required className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm text-ink-900" />
+            <input name="expiryDate" type="date" required className="input" />
           </label>
-          <input name="usageLimit" type="number" placeholder="Total usage limit (optional)" className="sm:col-span-2 rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
+          <input name="usageLimit" type="number" placeholder="Total usage limit (optional)" className="sm:col-span-2 input" />
           <button type="submit" className="btn-gold sm:col-span-2">Add Coupon</button>
         </form>
       </div>

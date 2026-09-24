@@ -20,9 +20,6 @@ const NAV = [
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  // Server-side RBAC guard — never trust a client-sent role. Every /admin/*
-  // page and /api/admin/* route re-checks this; this layout is the first line
-  // of defense for the UI shell.
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect('/login?callbackUrl=/admin');
   if (session.user.role !== 'ADMIN' && session.user.role !== 'STAFF') redirect('/');

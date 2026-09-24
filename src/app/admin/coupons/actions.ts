@@ -1,48 +1,43 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getServerSession } from 'next-auth';
-import { authOptions, assertRole } from '@/server/auth';
+import { requireRole } from '@/server/auth';
 import { db } from '@/server/db';
+import { field, optionalNumber } from '@/lib/form';
 import type { DiscountType } from '@prisma/client';
 
-export async function createCoupon(formData: FormData) {
-  const session = await getServerSession(authOptions);
-  assertRole(session?.user?.role, ['ADMIN']);
+function refresh() {
+  revalidatePath('/admin/coupons');
+  revalidatePath('/offers');
+}
 
+export async function createCoupon(form: FormData) {
+  await requireRole(['ADMIN']);
   const hotel = await db.hotel.findFirstOrThrow();
 
   await db.coupon.create({
     data: {
       hotelId: hotel.id,
-      code: String(formData.get('code')).toUpperCase().trim(),
-      discountType: String(formData.get('discountType')) as DiscountType,
-      discountValue: Number(formData.get('discountValue')),
-      minBookingAmount: formData.get('minBookingAmount') ? Number(formData.get('minBookingAmount')) : null,
-      startDate: new Date(String(formData.get('startDate'))),
-      expiryDate: new Date(String(formData.get('expiryDate'))),
-      usageLimit: formData.get('usageLimit') ? Number(formData.get('usageLimit')) : null,
+      code: field(form, 'code').toUpperCase(),
+      discountType: field(form, 'discountType') as DiscountType,
+      discountValue: Number(field(form, 'discountValue')),
+      minBookingAmount: optionalNumber(form, 'minBookingAmount'),
+      startDate: new Date(field(form, 'startDate')),
+      expiryDate: new Date(field(form, 'expiryDate')),
+      usageLimit: optionalNumber(form, 'usageLimit'),
     },
   });
-
-  revalidatePath('/admin/coupons');
-  revalidatePath('/offers');
+  refresh();
 }
 
 export async function toggleCoupon(id: string, isActive: boolean) {
-  const session = await getServerSession(authOptions);
-  assertRole(session?.user?.role, ['ADMIN']);
-
+  await requireRole(['ADMIN']);
   await db.coupon.update({ where: { id }, data: { isActive } });
-  revalidatePath('/admin/coupons');
-  revalidatePath('/offers');
+  refresh();
 }
 
 export async function deleteCoupon(id: string) {
-  const session = await getServerSession(authOptions);
-  assertRole(session?.user?.role, ['ADMIN']);
-
+  await requireRole(['ADMIN']);
   await db.coupon.delete({ where: { id } });
-  revalidatePath('/admin/coupons');
-  revalidatePath('/offers');
+  refresh();
 }

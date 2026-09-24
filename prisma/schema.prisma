@@ -10,9 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─────────────────────────────────────────────────────────────────────────
 // Enums
-// ─────────────────────────────────────────────────────────────────────────
 
 enum UserRole {
   CUSTOMER
@@ -73,9 +71,7 @@ enum NotificationAudience {
   ADMIN
 }
 
-// ─────────────────────────────────────────────────────────────────────────
 // Identity
-// ─────────────────────────────────────────────────────────────────────────
 
 model User {
   id            String    @id @default(cuid())
@@ -95,9 +91,7 @@ model User {
   @@index([role])
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-// Hotel & content (admin-editable — see PolicySetting / HotelProfile)
-// ─────────────────────────────────────────────────────────────────────────
+// Hotel & content
 
 model Hotel {
   id               String   @id @default(cuid())
@@ -172,9 +166,7 @@ model GalleryImage {
   order    Int     @default(0)
 }
 
-// ─────────────────────────────────────────────────────────────────────────
 // Rooms
-// ─────────────────────────────────────────────────────────────────────────
 
 model RoomType {
   id            String   @id @default(cuid())
@@ -210,8 +202,7 @@ model RoomImage {
   order      Int      @default(0)
 }
 
-// Individual physical rooms — lets admin block ONE unit for maintenance
-// without affecting the whole room type's inventory count.
+// A single physical room, so one unit can be blocked for maintenance.
 model Room {
   id         String     @id @default(cuid())
   roomTypeId String
@@ -240,9 +231,7 @@ model PricingRule {
   @@index([roomTypeId, startDate, endDate])
 }
 
-// ─────────────────────────────────────────────────────────────────────────
 // Bookings
-// ─────────────────────────────────────────────────────────────────────────
 
 model Booking {
   id              String        @id @default(cuid())
@@ -287,10 +276,7 @@ model Booking {
   notifications   Notification[]
   review          Review?
 
-  // Overlap-prevention relies on querying by roomTypeId + date range inside
-  // a transaction (see src/server/services/availability.service.ts) rather
-  // than a DB constraint, since "N rooms of a type" isn't expressible as a
-  // simple unique/exclusion constraint without a per-physical-room model.
+  // Double-booking is prevented in booking.service.ts (serializable transaction), not by a DB constraint.
   @@index([roomTypeId, checkIn, checkOut, status])
   @@index([status])
 }
@@ -337,9 +323,7 @@ model Coupon {
   bookings           Booking[]
 }
 
-// ─────────────────────────────────────────────────────────────────────────
 // Reviews, contact, notifications
-// ─────────────────────────────────────────────────────────────────────────
 
 model Review {
   id          String    @id @default(cuid())

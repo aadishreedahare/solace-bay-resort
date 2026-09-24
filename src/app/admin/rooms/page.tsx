@@ -44,14 +44,14 @@ export default async function AdminRoomsPage() {
       <div className="mt-10 rounded-xl border border-ink-900/8 bg-white p-6 shadow-card">
         <h2 className="font-serif text-lg text-ink-900">Add Room Type</h2>
         <form action={createRoomType} className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <input name="name" required placeholder="Name (e.g. Deluxe Room)" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-          <input name="bedType" required placeholder="Bed Type (e.g. King Bed)" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-          <input name="basePrice" required type="number" placeholder="Base Price / Night (₹)" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-          <input name="totalRooms" required type="number" placeholder="Total Units" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-          <input name="maxGuests" required type="number" placeholder="Max Guests / Room" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-          <input name="sizeSqft" required type="number" placeholder="Size (sq.ft)" className="rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-          <input name="amenities" placeholder="Amenities, comma-separated" className="sm:col-span-2 rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
-          <textarea name="description" required placeholder="Description" rows={3} className="sm:col-span-2 rounded-md border border-ink-900/15 px-3 py-2.5 text-sm" />
+          <input name="name" required placeholder="Name (e.g. Deluxe Room)" className="input" />
+          <input name="bedType" required placeholder="Bed Type (e.g. King Bed)" className="input" />
+          <input name="basePrice" required type="number" placeholder="Base Price / Night (₹)" className="input" />
+          <input name="totalRooms" required type="number" placeholder="Total Units" className="input" />
+          <input name="maxGuests" required type="number" placeholder="Max Guests / Room" className="input" />
+          <input name="sizeSqft" required type="number" placeholder="Size (sq.ft)" className="input" />
+          <input name="amenities" placeholder="Amenities, comma-separated" className="sm:col-span-2 input" />
+          <textarea name="description" required placeholder="Description" rows={3} className="sm:col-span-2 input" />
           <button type="submit" className="btn-gold sm:col-span-2">Add Room Type</button>
         </form>
       </div>

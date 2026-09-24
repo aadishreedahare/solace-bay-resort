@@ -1,15 +1,13 @@
-﻿import type { NextAuthOptions } from 'next-auth';
+import type { NextAuthOptions } from 'next-auth';
+import { getServerSession } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import type { UserRole } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { db } from '@/server/db';
 
-// Central NextAuth config, shared by the [...nextauth] route handler and
-// any server-side `getServerSession(authOptions)` call (e.g. RBAC guards).
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt' },
-  pages: {
-    signIn: '/login',
-  },
+  pages: { signIn: '/login' },
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -18,36 +16,28 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email || !credentials.password) return null;
 
         const user = await db.user.findUnique({
           where: { email: credentials.email.toLowerCase().trim() },
         });
-        if (!user) return null;
+        if (!user || !(await bcrypt.compare(credentials.password, user.passwordHash))) return null;
 
-        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
-        if (!isValid) return null;
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        };
+        return { id: user.id, name: user.name, email: user.email, role: user.role };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
       }
       return token;
     },
-    async session({ session, token }) {
+    session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
+        session.user.id = token.id;
         session.user.role = token.role;
       }
       return session;
@@ -55,18 +45,17 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-/**
- * requireRole — server-side guard used at the top of admin API routes and
- * the /admin layout. Throws a 401/403-shaped error the caller can catch and
- * turn into a Response; never trust a client-supplied role.
- */
-export function assertRole(
-  sessionRole: string | undefined,
-  allowed: Array<'CUSTOMER' | 'STAFF' | 'ADMIN'>,
-) {
-  if (!sessionRole || !allowed.includes(sessionRole as 'CUSTOMER' | 'STAFF' | 'ADMIN')) {
-    const error = new Error('Forbidden') as Error & { status?: number };
-    error.status = sessionRole ? 403 : 401;
-    throw error;
+export class AuthError extends Error {
+  constructor(public status: 401 | 403) {
+    super(status === 401 ? 'Unauthorized' : 'Forbidden');
   }
+}
+
+// Throws unless the signed-in user has one of the allowed roles. Returns the session.
+export async function requireRole(allowed: UserRole[]) {
+  const session = await getServerSession(authOptions);
+  const role = session?.user?.role;
+  if (!role) throw new AuthError(401);
+  if (!allowed.includes(role)) throw new AuthError(403);
+  return session;
 }

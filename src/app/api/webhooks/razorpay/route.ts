@@ -2,9 +2,7 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { db } from '@/server/db';
 
-// Fallback confirmation path in case the client-side verify call never
-// completes (browser closed mid-checkout, network drop, etc.) — Razorpay
-// calls this server-to-server, so it is the source of truth of last resort.
+// Backup for when the browser never calls /api/payments/verify (tab closed, network drop).
 export async function POST(req: Request) {
   const rawBody = await req.text();
   const signature = req.headers.get('x-razorpay-signature');

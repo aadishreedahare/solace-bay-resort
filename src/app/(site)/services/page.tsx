@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { db } from '@/server/db';
 import { PlaceholderImage } from '@/components/site/placeholder-image';
 import { formatCurrency } from '@/lib/utils';

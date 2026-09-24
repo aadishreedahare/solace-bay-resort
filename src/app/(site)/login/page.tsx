@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { TextField } from '@/components/site/text-field';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,11 +19,7 @@ export default function LoginPage() {
 
     const res = await signIn('credentials', { ...form, redirect: false });
     setLoading(false);
-
-    if (res?.error) {
-      setError('Incorrect email or password');
-      return;
-    }
+    if (res?.error) return setError('Incorrect email or password');
     router.push('/account/bookings');
   }
 
@@ -30,26 +27,8 @@ export default function LoginPage() {
     <div className="container-site flex min-h-[70vh] max-w-md flex-col justify-center py-16">
       <h1 className="text-center font-serif text-3xl text-ink-900">Sign In</h1>
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-ink-900/60">Email</span>
-          <input
-            required
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full rounded-md border border-ink-900/15 px-3 py-2.5 text-sm outline-none focus:border-gold-500"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-ink-900/60">Password</span>
-          <input
-            required
-            type="password"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full rounded-md border border-ink-900/15 px-3 py-2.5 text-sm outline-none focus:border-gold-500"
-          />
-        </label>
+        <TextField label="Email" type="email" required value={form.email} onChange={(email) => setForm({ ...form, email })} />
+        <TextField label="Password" type="password" required value={form.password} onChange={(password) => setForm({ ...form, password })} />
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button type="submit" disabled={loading} className="btn-gold w-full disabled:opacity-50">
           {loading ? 'Signing in…' : 'Sign In'}

@@ -13,25 +13,9 @@ export async function POST(req: Request) {
   }
 
   const session = await getServerSession(authOptions);
-  const data = parsed.data;
 
   try {
-    const booking = await createBooking({
-      userId: session?.user?.id,
-      roomTypeId: data.roomTypeId,
-      checkIn: data.checkIn,
-      checkOut: data.checkOut,
-      roomsBooked: data.roomsBooked,
-      guestsCount: data.guestsCount,
-      guestName: data.guestName,
-      guestEmail: data.guestEmail,
-      guestPhone: data.guestPhone,
-      specialRequests: data.specialRequests,
-      couponCode: data.couponCode,
-      guests: data.guests,
-      source: 'WEBSITE',
-    });
-
+    const booking = await createBooking({ ...parsed.data, userId: session?.user?.id, source: 'WEBSITE' });
     return NextResponse.json({ booking }, { status: 201 });
   } catch (err) {
     if (err instanceof BookingError) {

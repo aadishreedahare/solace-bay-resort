@@ -1,49 +1,39 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getServerSession } from 'next-auth';
-import { authOptions, assertRole } from '@/server/auth';
+import { requireRole } from '@/server/auth';
 import { db } from '@/server/db';
+import { field, optionalField, optionalNumber, optionalDate } from '@/lib/form';
 import type { PricingRuleType } from '@prisma/client';
 
-export async function createPricingRule(formData: FormData) {
-  const session = await getServerSession(authOptions);
-  assertRole(session?.user?.role, ['ADMIN']);
-
+export async function createPricingRule(form: FormData) {
+  await requireRole(['ADMIN']);
   const hotel = await db.hotel.findFirstOrThrow();
-  const type = String(formData.get('type')) as PricingRuleType;
-  const priceOverride = formData.get('priceOverride') ? Number(formData.get('priceOverride')) : null;
-  const priceDeltaPct = formData.get('priceDeltaPct') ? Number(formData.get('priceDeltaPct')) : null;
-  const startDate = formData.get('startDate') ? new Date(String(formData.get('startDate'))) : null;
-  const endDate = formData.get('endDate') ? new Date(String(formData.get('endDate'))) : null;
+  const type = field(form, 'type') as PricingRuleType;
+  const hasDates = type === 'SEASONAL' || type === 'HOLIDAY';
 
   await db.pricingRule.create({
     data: {
       hotelId: hotel.id,
-      roomTypeId: String(formData.get('roomTypeId') || '') || null,
+      roomTypeId: optionalField(form, 'roomTypeId'),
       type,
-      startDate: type === 'SEASONAL' || type === 'HOLIDAY' ? startDate : null,
-      endDate: type === 'SEASONAL' || type === 'HOLIDAY' ? endDate : null,
-      priceOverride,
-      priceDeltaPct,
+      startDate: hasDates ? optionalDate(form, 'startDate') : null,
+      endDate: hasDates ? optionalDate(form, 'endDate') : null,
+      priceOverride: optionalNumber(form, 'priceOverride'),
+      priceDeltaPct: optionalNumber(form, 'priceDeltaPct'),
     },
   });
-
   revalidatePath('/admin/pricing');
 }
 
 export async function togglePricingRule(id: string, isActive: boolean) {
-  const session = await getServerSession(authOptions);
-  assertRole(session?.user?.role, ['ADMIN']);
-
+  await requireRole(['ADMIN']);
   await db.pricingRule.update({ where: { id }, data: { isActive } });
   revalidatePath('/admin/pricing');
 }
 
 export async function deletePricingRule(id: string) {
-  const session = await getServerSession(authOptions);
-  assertRole(session?.user?.role, ['ADMIN']);
-
+  await requireRole(['ADMIN']);
   await db.pricingRule.delete({ where: { id } });
   revalidatePath('/admin/pricing');
 }

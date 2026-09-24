@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { TextField } from '@/components/site/text-field';
 
 export default function RegisterPage() {
   const router = useRouter();
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const set = (key: keyof typeof form) => (value: string) => setForm({ ...form, [key]: value });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,9 +23,8 @@ export default function RegisterPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
     });
-    const json = await res.json();
-
     if (!res.ok) {
+      const json = await res.json();
       setError(json.error ?? 'Could not create account');
       setLoading(false);
       return;
@@ -37,22 +38,10 @@ export default function RegisterPage() {
     <div className="container-site flex min-h-[70vh] max-w-md flex-col justify-center py-16">
       <h1 className="text-center font-serif text-3xl text-ink-900">Create an Account</h1>
       <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-ink-900/60">Full Name</span>
-          <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full rounded-md border border-ink-900/15 px-3 py-2.5 text-sm outline-none focus:border-gold-500" />
-        </label>
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-ink-900/60">Email</span>
-          <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full rounded-md border border-ink-900/15 px-3 py-2.5 text-sm outline-none focus:border-gold-500" />
-        </label>
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-ink-900/60">Phone</span>
-          <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full rounded-md border border-ink-900/15 px-3 py-2.5 text-sm outline-none focus:border-gold-500" />
-        </label>
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-ink-900/60">Password</span>
-          <input required type="password" minLength={8} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="w-full rounded-md border border-ink-900/15 px-3 py-2.5 text-sm outline-none focus:border-gold-500" />
-        </label>
+        <TextField label="Full Name" required value={form.name} onChange={set('name')} />
+        <TextField label="Email" type="email" required value={form.email} onChange={set('email')} />
+        <TextField label="Phone" value={form.phone} onChange={set('phone')} />
+        <TextField label="Password" type="password" required minLength={8} value={form.password} onChange={set('password')} />
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button type="submit" disabled={loading} className="btn-gold w-full disabled:opacity-50">
           {loading ? 'Creating account…' : 'Create Account'}

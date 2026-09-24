@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { db } from '@/server/db';
 import { getAvailableRoomCount } from '@/server/services/availability.service';
-import { RoomCard, type RoomCardData } from '@/components/site/room-card';
+import { RoomCard, toRoomCard } from '@/components/site/room-card';
 import { SectionHeading } from '@/components/site/section-heading';
 import { PlaceholderImage } from '@/components/site/placeholder-image';
 
@@ -34,25 +34,16 @@ export default async function RoomsPage({
   const guests = Number(searchParams.guests) || 1;
 
   const roomTypes = await db.roomType.findMany({
-    where: { isActive: true, maxGuests: { gte: 1 } },
+    where: { isActive: true, maxGuests: { gte: guests } },
     orderBy: { basePrice: 'asc' },
   });
 
-  const rooms: (RoomCardData & { availableRooms: number })[] = await Promise.all(
+  const rooms = await Promise.all(
     roomTypes.map(async (rt, i) => ({
-      slug: rt.slug,
-      name: rt.name,
-      description: rt.description,
-      basePrice: Number(rt.basePrice),
-      maxGuests: rt.maxGuests,
-      bedType: rt.bedType,
-      sizeSqft: rt.sizeSqft,
-      imageSeed: i,
+      ...toRoomCard(rt, i),
       availableRooms: await getAvailableRoomCount(rt.id, checkIn, checkOut).catch(() => rt.totalRooms),
     })),
   );
-
-  const filtered = rooms.filter((r) => r.maxGuests >= guests);
 
   return (
     <>
@@ -69,12 +60,12 @@ export default async function RoomsPage({
         <div className="container-site">
           <SectionHeading
             eyebrow="Availability"
-            title={`${filtered.length} Room Type${filtered.length === 1 ? '' : 's'} Available`}
+            title={`${rooms.length} Room Type${rooms.length === 1 ? '' : 's'} Available`}
             description={`Showing rates for ${checkIn.toLocaleDateString('en-IN')} – ${checkOut.toLocaleDateString('en-IN')}, ${guests} guest${guests > 1 ? 's' : ''}.`}
           />
 
           <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((room) => (
+            {rooms.map((room) => (
               <div key={room.slug} className="relative">
                 <RoomCard room={room} />
                 {room.availableRooms <= 3 && room.availableRooms > 0 && (
@@ -91,7 +82,7 @@ export default async function RoomsPage({
             ))}
           </div>
 
-          {filtered.length === 0 && (
+          {rooms.length === 0 && (
             <p className="mt-10 text-center text-sm text-ink-900/60">
               No rooms match this guest count for the selected dates — try adjusting your search.
             </p>
